@@ -67,10 +67,7 @@ class CompositeCustomBusinessDay(CustomBusinessDay):
                     start_date = pd.Timestamp.min
                 else:
                     start_date = pd.Timestamp(start_date)
-                if end_date is None:
-                    end_date = pd.Timestamp.max
-                else:
-                    end_date = pd.Timestamp(end_date)
+                end_date = pd.Timestamp.max if end_date is None else pd.Timestamp(end_date)
                 interval = pd.Interval(start_date, end_date, closed="both")
                 business_days_intervals.append(interval)
             self._business_days_index = pd.IntervalIndex(
@@ -143,32 +140,26 @@ class CompositeCustomBusinessDay(CustomBusinessDay):
 
     @apply_wraps
     def apply(self, other):
-        if isinstance(other, datetime):
-            moved = 0
+        if not isinstance(other, datetime):
+            return super().apply(other)
+        moved = 0
+        remaining = self.n - moved
+        bday, interval = self._custom_business_day_for(
+            other, remaining, with_interval=True
+        )
+        result = bday.apply(other)
+        while not interval.left <= result <= interval.right:
+            previous_other = other
+            other = interval.left if result < interval.left else interval.right
+            moved += self._moved(previous_other, other, bday)
             remaining = self.n - moved
+            if remaining == 0:
+                break
             bday, interval = self._custom_business_day_for(
-                other, remaining, with_interval=True
+                other, remaining, is_edge=True, with_interval=True
             )
             result = bday.apply(other)
-            while not interval.left <= result <= interval.right:
-                previous_other = other
-                if result < interval.left:
-                    other = interval.left
-                elif result > interval.right:
-                    other = interval.right
-                else:
-                    raise RuntimeError("Should not reach here")
-                moved += self._moved(previous_other, other, bday)
-                remaining = self.n - moved
-                if remaining == 0:
-                    break
-                bday, interval = self._custom_business_day_for(
-                    other, remaining, is_edge=True, with_interval=True
-                )
-                result = bday.apply(other)
-            return result
-        else:
-            return super().apply(other)
+        return result
 
     def is_on_offset(self, dt):
         if self.normalize and not _is_normalized(dt):
@@ -213,10 +204,6 @@ def _get_calendar(weekmask, holidays, calendar):
             holidays = tuple(calendar.holidays)
         elif not isinstance(holidays, tuple):
             holidays = tuple(holidays)
-        else:
-            # Trust that calendar.holidays and holidays are
-            # consistent
-            pass
         # Update weekmask if applicable (added)
         calendar = np.busdaycalendar(weekmask, holidays)
         return calendar, holidays

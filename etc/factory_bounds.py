@@ -110,20 +110,18 @@ class _FindFactoryBounds:
         offset: pd.DateOffset,
         bound: Literal["start", "end"],
     ) -> pd.Timestamp:
-        # recursively look for a valid date every offset, return first that's valid
         if self._is_valid_date(look_from, bound):
             return look_from
+        next_look_from = look_from + offset
+        if (  # if start has move into the future or end into the past
+            look_from <= self.today < next_look_from
+            or look_from >= self.today > next_look_from
+        ):
+            return self.today
         else:
-            next_look_from = look_from + offset
-            if (  # if start has move into the future or end into the past
-                look_from <= self.today < next_look_from
-                or look_from >= self.today > next_look_from
-            ):
-                return self.today
-            else:
-                return self._get_a_valid_date_by_trying_every_x_days(
-                    next_look_from, offset, bound
-                )
+            return self._get_a_valid_date_by_trying_every_x_days(
+                next_look_from, offset, bound
+            )
 
     @property
     def _first_offset(self) -> pd.DateOffset:
@@ -136,7 +134,7 @@ class _FindFactoryBounds:
         self, bound: Literal["start", "end"]
     ) -> abc.Iterator[pd.DateOffset]:
         sign = 1 if bound == "start" else -1
-        iterator = iter(
+        return iter(
             [
                 sign * self._first_offset,
                 sign * pd.DateOffset(years=30),
@@ -150,17 +148,15 @@ class _FindFactoryBounds:
                 sign * pd.DateOffset(days=1),
             ]
         )
-        return iterator
 
     def _is_valid_bound(
         self, date: pd.Timestamp, bound: Literal["start", "end"]
     ) -> bool:
         if not self._is_valid_date(date, bound):
             return False
-        else:
-            day_delta = 1 if bound == "end" else -1
-            date = date + pd.Timedelta(day_delta, "D")
-            return not self._is_valid_date(date, bound)
+        day_delta = 1 if bound == "end" else -1
+        date = date + pd.Timedelta(day_delta, "D")
+        return not self._is_valid_date(date, bound)
 
     def _try_short_cut(
         self, bound: Literal["start", "end"]
@@ -281,10 +277,10 @@ def _find_bounds_all_factories(watch=False) -> dict[str, FactoryBounds]:
     True for a live print of factory calls as the bounds are sought and
     proded.
     """
-    cal_bounds = {}
-    for name, Factory in xcals.calendar_utils._default_calendar_factories.items():
-        cal_bounds[name] = find_factory_bounds(Factory, watch)
-    return cal_bounds
+    return {
+        name: find_factory_bounds(Factory, watch)
+        for name, Factory in xcals.calendar_utils._default_calendar_factories.items()
+    }
 
 
 def _factory_bounds_resource_path() -> pathlib.PurePath:

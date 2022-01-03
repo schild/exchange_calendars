@@ -82,13 +82,14 @@ class TestXTKSCalendar(ExchangeCalendarTestBase):
         start, end = "1997-01-01", "2007-01-01"
         consitution_memorial_days = ConstitutionMemorialDay.dates(start, end)
         childrens_days = ChildrensDay.dates(start, end)
-        citizens_days = []
-        for cm_day, childrens_day in zip(consitution_memorial_days, childrens_days):
-            # if there is only one day between Constitution Memorial
-            # Day and Children's Day, that day should be a holiday
-            if childrens_day - cm_day != pd.Timedelta(days=2):
-                continue
-            citizens_days.append(cm_day + pd.Timedelta(days=1))
+        citizens_days = [
+            cm_day + pd.Timedelta(days=1)
+            for cm_day, childrens_day in zip(
+                consitution_memorial_days, childrens_days
+            )
+            if childrens_day - cm_day == pd.Timedelta(days=2)
+        ]
+
         yield citizens_days
 
     @pytest.fixture

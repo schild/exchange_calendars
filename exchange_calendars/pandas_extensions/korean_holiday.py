@@ -204,8 +204,14 @@ class KoreanLunarHoliday(KoreanHoliday):
                 solar_end_date = self._max_solar_end_date
             else:
                 raise ValueError(
-                    "Cannot support date range after %r, but %r ~ %r given"
-                    % (self._max_solar_end_date, start_date, end_date)
+                    (
+                        "Cannot support date range after %r, but %r ~ %r given"
+                        % (
+                            self._max_solar_end_date,
+                            solar_start_date,
+                            solar_end_date,
+                        )
+                    )
                 )
 
         # Get lunar reference dates
