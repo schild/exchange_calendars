@@ -986,8 +986,7 @@ class Answers:
 
     @functools.lru_cache(maxsize=4)
     def _session_blocks(self) -> dict[str, pd.DatetimeIndex]:
-        blocks = {}
-        blocks["normal"] = self._get_normal_session_block()
+        blocks = {'normal': self._get_normal_session_block()}
         blocks["first_three"] = self.sessions[:3]
         blocks["last_three"] = self.sessions[-3:]
 
@@ -1234,15 +1233,12 @@ class Answers:
         last_mins = self.last_minutes[sessions]
         last_mins_less_one = last_mins - self.ONE_MIN
 
-        trading_mins = []
         break_mins = []
 
-        for session, mins_ in zip(
+        trading_mins = [(mins_, session) for session, mins_ in zip(
             sessions,
             zip(first_mins, first_mins_plus_one, last_mins, last_mins_less_one),
-        ):
-            trading_mins.append((mins_, session))
-
+        )]
         if self.has_a_session_with_break:
             last_am_mins = self.last_am_minutes[sessions]
             last_am_mins = last_am_mins[last_am_mins.notna()]
@@ -1303,8 +1299,7 @@ class Answers:
     def trading_minutes_only(self) -> abc.Iterator[pd.Timestamp]:
         """Generator of trading minutes of `self.trading_minutes`."""
         for mins, _ in self.trading_minutes:
-            for minute in mins:
-                yield minute
+            yield from mins
 
     @property
     def trading_minute(self) -> pd.Timestamp:
@@ -1331,15 +1326,12 @@ class Answers:
     def break_minutes_only(self) -> abc.Iterator[pd.Timestamp]:
         """Generator of break minutes of `self.break_minutes`."""
         for mins, _ in self.break_minutes:
-            for minute in mins:
-                yield minute
+            yield from mins
 
     @functools.lru_cache(maxsize=4)
     def _non_trading_minutes(
         self,
     ) -> tuple[tuple[tuple[pd.Timestamp], pd.Timestamp, pd.Timestamp]]:
-        non_trading_mins = []
-
         sessions = self.sessions_sample
         sessions = prev_sessions = sessions[sessions.isin(self.sessions_with_gap_after)]
 
@@ -1348,10 +1340,15 @@ class Answers:
         last_mins_plus_one = self.last_minutes[sessions] + self.ONE_MIN
         first_mins_less_one = self.first_minutes[next_sessions] - self.ONE_MIN
 
-        for prev_session, next_session, mins_ in zip(
-            prev_sessions, next_sessions, zip(last_mins_plus_one, first_mins_less_one)
-        ):
-            non_trading_mins.append((mins_, prev_session, next_session))
+        non_trading_mins = [
+            (mins_, prev_session, next_session)
+            for prev_session, next_session, mins_ in zip(
+                prev_sessions,
+                next_sessions,
+                zip(last_mins_plus_one, first_mins_less_one),
+            )
+        ]
+
 
         return tuple(non_trading_mins)
 
@@ -1387,8 +1384,7 @@ class Answers:
     def non_trading_minutes_only(self) -> abc.Iterator[pd.Timestamp]:
         """Generator of non-trading minutes of `self.non_trading_minutes`."""
         for mins, _, _ in self.non_trading_minutes:
-            for minute in mins:
-                yield minute
+            yield from mins
 
     # --- Evaluated minutes of a specific circumstance ---
 
@@ -2078,7 +2074,7 @@ class ExchangeCalendarTestBase:
             for name in dir(ExchangeCalendar)
             if name not in valid_overrides
             and not name.startswith("__")
-            and not name == "_abc_impl"
+            and name != "_abc_impl"
         ]
 
     @pytest.fixture(scope="class")

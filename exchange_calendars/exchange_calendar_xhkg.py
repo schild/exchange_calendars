@@ -306,7 +306,7 @@ class XHKGExchangeCalendar(PrecomputedExchangeCalendar):
 
     @property
     def precomputed_holidays(self):
-        lunisolar_holidays = (
+        return (
             chinese_buddhas_birthday_dates,
             chinese_lunar_new_year_dates,
             day_after_mid_autumn_festival_dates,
@@ -314,7 +314,6 @@ class XHKGExchangeCalendar(PrecomputedExchangeCalendar):
             dragon_boat_festival_dates,
             qingming_festival_dates,
         )
-        return lunisolar_holidays
 
     @property
     def _earliest_precomputed_year(self) -> int:

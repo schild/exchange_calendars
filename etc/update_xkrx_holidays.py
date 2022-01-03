@@ -40,8 +40,7 @@ def download_krx_holidays_as_dict(year=None, page_first_call=False):
             headers=headers,
             params=params,
         )
-        code = response.content
-        return code
+        return response.content
 
     code = generate_otp()
     headers = {
@@ -93,7 +92,7 @@ def update_dupmed_precomputed_krx_holidays():
         os.path.dirname(__file__), "../exchange_calendars/xkrx_holidays.py"
     )
     with open(xkrx_holidays_py, "r") as f:
-        lines = [line for line in f]
+        lines = list(f)
     start_line = "dumped_precomputed_krx_holidays = pd.to_datetime("
     end_line = ")"
     start_line_index = 0

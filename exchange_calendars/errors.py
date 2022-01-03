@@ -33,8 +33,7 @@ class CalendarError(Exception):
         return str(self)
 
     def __str__(self):
-        msg = self.msg.format(**self.kwargs)
-        return msg
+        return self.msg.format(**self.kwargs)
 
     __unicode__ = __str__
     __repr__ = __str__

@@ -258,10 +258,11 @@ class ExchangeCalendarDispatcher(object):
         # will raise InvalidCalendarName if name not valid
         name = self.resolve_alias(name)
 
-        kwargs = {}
-        for k, v in zip(["start", "end", "side"], [start, end, side]):
-            if v is not None:
-                kwargs[k] = v
+        kwargs = {
+            k: v
+            for k, v in zip(["start", "end", "side"], [start, end, side])
+            if v is not None
+        }
 
         if name in self._calendars:
             if kwargs:

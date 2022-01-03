@@ -64,10 +64,10 @@ def compute_minutes(
     side: str = "both",
 ) -> np.ndarray:
     """Return array of trading minutes."""
-    start_ext = 0 if side in ["left", "both"] else NANOSECONDS_PER_MINUTE
+    start_ext = 0 if side in {"left", "both"} else NANOSECONDS_PER_MINUTE
     # NOTE: Add an extra minute to ending boundaries (break_start and close)
     # so we include the last bar (arange doesn't include its stop).
-    end_ext = NANOSECONDS_PER_MINUTE if side in ["right", "both"] else 0
+    end_ext = NANOSECONDS_PER_MINUTE if side in {"right", "both"} else 0
 
     pieces = []
     for open_time, break_start_time, break_end_time, close_time in zip(
@@ -96,8 +96,7 @@ def compute_minutes(
                     NANOSECONDS_PER_MINUTE,
                 )
             )
-    out = np.concatenate(pieces).view("datetime64[ns]")
-    return out
+    return np.concatenate(pieces).view("datetime64[ns]")
 
 
 def one_minute_earlier(arr: np.ndarray) -> np.ndarray:
@@ -301,13 +300,13 @@ def parse_date(
     # if it falls within the minute that follows midnight.
     ts = parse_timestamp(date, param_name, raise_oob=False, side="left", utc=False)
 
-    if not (ts.tz is None or ts.tz.zone == "UTC"):
+    if ts.tz is not None and ts.tz.zone != "UTC":
         raise ValueError(
             f"Parameter `{param_name}` received with timezone defined as '{ts.tz.zone}'"
             f" although a Date must be timezone naive or have timezone as 'UTC'."
         )
 
-    if not ts == ts.normalize():
+    if ts != ts.normalize():
         raise ValueError(
             f"Parameter `{param_name}` parsed as '{ts}' although a Date must have"
             f" a time component of 00:00."
@@ -525,33 +524,29 @@ class _TradingIndex:
         sorting the right index by value would result in the indices
         becoming unsynced with the corresponding left indices.
         """
-        if self.has_break:
-
-            # sessions with breaks
-            index_am = self._create_index_for_sessions(
-                self.opens[self.mask],
-                self.break_starts[self.mask],
-                self.force_break_close,
-            )
-
-            index_pm = self._create_index_for_sessions(
-                self.break_ends[self.mask], self.closes[self.mask], self.force_close
-            )
-
-            # sessions without a break
-            index_day = self._create_index_for_sessions(
-                self.opens[~self.mask], self.closes[~self.mask], self.force_close
-            )
-
-            # put it all together
-            index = np.concatenate((index_am, index_pm, index_day))
-
-        else:
-            index = self._create_index_for_sessions(
+        if not self.has_break:
+            return self._create_index_for_sessions(
                 self.opens, self.closes, self.force_close
             )
 
-        return index
+        # sessions with breaks
+        index_am = self._create_index_for_sessions(
+            self.opens[self.mask],
+            self.break_starts[self.mask],
+            self.force_break_close,
+        )
+
+        index_pm = self._create_index_for_sessions(
+            self.break_ends[self.mask], self.closes[self.mask], self.force_close
+        )
+
+        # sessions without a break
+        index_day = self._create_index_for_sessions(
+            self.opens[~self.mask], self.closes[~self.mask], self.force_close
+        )
+
+            # put it all together
+        return np.concatenate((index_am, index_pm, index_day))
 
     def trading_index(self) -> pd.DatetimeIndex:
         """Create trading index as a DatetimeIndex."""

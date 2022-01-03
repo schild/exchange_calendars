@@ -18,49 +18,37 @@ class TestXBUDCalendar(ExchangeCalendarTestBase):
     @pytest.fixture
     def regular_holidays_sample(self):
         hols = [
-            # 2019
-            "2019-01-01",  # New Year's Day
-            "2019-03-15",  # National Holiday
-            "2019-04-19",  # Good Friday
-            "2019-04-22",  # Easter Monday
-            "2019-05-01",  # Labour Day
-            "2019-06-10",  # Whit Monday
-            "2019-08-20",  # St. Stephen's Day
-            "2019-10-23",  # National Holiday
-            "2019-11-01",  # All Saint's Day
-            "2019-12-24",  # Christmas Eve
-            "2019-12-25",  # Christmas Day
-            "2019-12-26",  # Second Day of Christmas
-            "2019-12-31",  # New Year's Eve
-            # Bridge Days. If some holidays fall on a Tuesday or Thursday
-            # then Monday or Friday is also a holiday (bridge day).
-            # New Years Day on Thursday, Jan 1
-            "2015-01-01",
-            "2015-01-02",
-            # National Holiday on Tuesday, March 15
-            "2016-03-15",
-            "2016-03-14",
-            # Labour Day on Tuesday, May 1
-            "2018-05-01",
-            "2018-04-30",
-            # St. Stephen's Day on Thursday, Aug 20
-            "2015-08-20",
-            "2015-08-21",
-            # National Holiday on Thursday, Oct 23
-            "2014-10-23",
-            "2014-10-24",
-            # All Saint's Day on Tuesday, Nov 1
-            "2016-11-01",
-            "2016-10-31",
-            # Second Day of Christmas on Thursday, Dec 26
-            "2019-12-27",
-            # Observance of bridge day when Second Day of Christmas falls on a Thursday
-            # is not strict, although was observed in 2013, 2019.
-            "2013-12-27",  # Friday
-            "2019-12-27",  # Friday
+            '2019-01-01',
+            '2019-03-15',
+            '2019-04-19',
+            '2019-04-22',
+            '2019-05-01',
+            '2019-06-10',
+            '2019-08-20',
+            '2019-10-23',
+            '2019-11-01',
+            '2019-12-24',
+            '2019-12-25',
+            '2019-12-26',
+            '2019-12-31',
+            '2015-01-01',
+            '2015-01-02',
+            '2016-03-15',
+            '2016-03-14',
+            '2018-05-01',
+            '2018-04-30',
+            '2015-08-20',
+            '2015-08-21',
+            '2014-10-23',
+            '2014-10-24',
+            '2016-11-01',
+            '2016-10-31',
+            '2019-12-27',
+            '2013-12-27',
+            '2019-12-27',
+            *[f"{year}-12-31" for year in range(2011, 2020)],
         ]
-        # New Year's Eve only a holiday from 2011.
-        hols.extend([f"{year}-12-31" for year in range(2011, 2020)])
+
         yield hols
 
     @pytest.fixture

@@ -77,8 +77,7 @@ class Holiday(PandasHoliday):
         if self.observance is not None:
             info += f", observance={self.observance}"
 
-        repr = f"{self.__class__.__name__}: {self.name} ({info})"
-        return repr
+        return f"{self.__class__.__name__}: {self.name} ({info})"
 
     def dates(self, start_date, end_date, return_name=False):
         start_date = Timestamp(start_date)
@@ -91,10 +90,7 @@ class Holiday(PandasHoliday):
 
     def _apply_offset(self, dates):
         if self.offset is not None:
-            if not isinstance(self.offset, list):
-                offsets = [self.offset]
-            else:
-                offsets = self.offset
+            offsets = [self.offset] if not isinstance(self.offset, list) else self.offset
             for offset in offsets:
                 # If we are adding a non-vectorized value
                 # ignore the PerformanceWarnings:

@@ -31,7 +31,7 @@ def songkran_festival_last_day_observance(dt):
     This function is similar to the pandas function `next_monday_or_tuesday`
     except it does not observe Saturday holidays on Monday.
     """
-    if dt.weekday() == SUNDAY or dt.weekday() == MONDAY:
+    if dt.weekday() in [SUNDAY, MONDAY]:
         return dt + timedelta(days=1)
     return dt
 

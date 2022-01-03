@@ -1175,7 +1175,7 @@ class ExchangeCalendar(ABC):
             date = parse_date(date, calendar=self)
         if self.is_session(date, _parse=False):
             return date
-        elif direction in ["next", "previous"]:
+        elif direction in {"next", "previous"}:
             idx = self._get_date_idx(date, _parse=False)
             if direction == "previous":
                 idx -= 1
@@ -1800,13 +1800,11 @@ class ExchangeCalendar(ABC):
             if minute.value > self.minutes_nanos[-1]:
                 raise errors.RequestedMinuteOutOfBounds(self, too_early=False)
 
-        if self.is_trading_minute(minute, _parse=False):
-            # this guard is necessary as minute can be for a different session than the
-            # intended if the gap between sessions is less than any difference in the
-            # open or close times (i.e. only relevant if base and target sessions have
-            # different open/close times.
-            if self.minute_to_session(minute, _parse=False) == target_session:
-                return minute
+        if (
+            self.is_trading_minute(minute, _parse=False)
+            and self.minute_to_session(minute, _parse=False) == target_session
+        ):
+            return minute
         first_minute = self.session_first_minute(target_session, _parse=False)
         if minute < first_minute:
             return first_minute
@@ -2368,7 +2366,7 @@ class ExchangeCalendar(ABC):
         if period == pd.Timedelta(1, "D"):
             return self.sessions_in_range(start, end)
 
-        if intervals and closed in ["both", "neither"]:
+        if intervals and closed in {"both", "neither"}:
             raise ValueError(
                 f"If `intervals` is True then `closed` cannot be '{closed}'."
             )
